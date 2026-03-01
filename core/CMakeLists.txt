@@ -21,10 +21,5 @@ add_library(zen::core ALIAS zen_core)
 
 # testing and examples
 if (BUILD_EXAMPLES)
-    message(STATUS "Building zen_core examples")
-    file(GLOB_RECURSE CORE_EXAMPLES_SOURCES
-        "${CMAKE_CURRENT_SOURCE_DIR}/examples/**.cpp"
-    )
-    add_executable(zen_core_example ${CORE_EXAMPLES_SOURCES})
-    target_link_libraries(zen_core_example PUBLIC zen::core)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples")
 endif()
