@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform/window.hpp"
+#include "platform/i_window.hpp"
 
 namespace zen {
 
@@ -11,8 +11,8 @@ public:
     Platform() = default;
     ~Platform() = default;
 
-    Window* CreateWindow();
-    void DestroyWindow(Window* _window);
+    IWindow* CreateWindow();
+    void DestroyWindow(IWindow* _window);
 
 };
 
