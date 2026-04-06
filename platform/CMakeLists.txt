@@ -1,0 +1,18 @@
+message(STATUS "Building zen_platform")
+
+# core library
+set(PLATFORM_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+file(GLOB_RECURSE PLATFORM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/**.cpp")
+add_library(zen_platform STATIC ${PLATFORM_SOURCES})
+target_include_directories(zen_platform PUBLIC ${PLATFORM_INCLUDES})
+
+# link zen_core
+target_link_libraries(zen_platform PUBLIC zen::core)
+
+# alias project to match C++ namespace
+add_library(zen::platform ALIAS zen_platform)
+
+# testing and examples
+if (BUILD_EXAMPLES)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/test")
+endif()
