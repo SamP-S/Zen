@@ -11,7 +11,7 @@ enum class ModuleType {
     MAX_ENUM
 };
 
-class Module {
+class IModule {
 public:
     // standard methods for safe start/end/rebooting modules
     virtual void Boot() = 0;

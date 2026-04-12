@@ -2,8 +2,8 @@
 
 #include <functional>
 
-#include "core/module.hpp"
-#include "platform/event.hpp"
+#include "zen/core/module.hpp"
+#include "zen/platform/event.hpp"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -31,7 +31,7 @@ public:
     void* GetNativeContextHandler() const;
     
     // event handling
-    void AddEventHandler(std::function<void(Event&)> _handler);
+    Event* PollEvents();
 
     // looping
     void StartFrame();

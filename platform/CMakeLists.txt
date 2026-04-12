@@ -14,5 +14,5 @@ add_library(zen::platform ALIAS zen_platform)
 
 # testing and examples
 if (BUILD_EXAMPLES)
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/test")
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples")
 endif()

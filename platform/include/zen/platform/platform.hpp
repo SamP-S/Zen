@@ -1,10 +1,12 @@
 #pragma once
 
-#include "platform/i_window.hpp"
+#include "zen/platform/i_window.hpp"
 
 namespace zen {
 
 namespace platform {
+
+/// Platform 
 
 class Platform {
 public:
