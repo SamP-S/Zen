@@ -1,20 +1,15 @@
 #pragma once
 
-#include "zen/platform/i_window.hpp"
+#include "zen/platform/common.hpp"
 
 namespace zen {
 
 namespace platform {
 
-/// Platform 
-
 class Platform {
 public:
-    Platform() = default;
+    Platform(PlatformBackendAPI _backendAPI);
     ~Platform() = default;
-
-    IWindow* CreateWindow();
-    void DestroyWindow(IWindow* _window);
 
 };
 

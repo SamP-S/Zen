@@ -12,8 +12,6 @@ namespace zen {
 
 namespace platform {
 
-using WindowHandle = uint32_t;
-
 class IWindowBackend {
 private:
     IWindowBackend() = default;
@@ -38,8 +36,8 @@ public:
 	virtual void destroyAllWindows();
 
     // native handlers
-    virtual void* getNativeHandle() const;
-    virtual void* getContextHandle() const;
+    virtual void* getNativeHandle(WindowHandle _handle) const;
+    virtual void* getContextHandle(WindowHandle _handle) const;
     
     // event handling
     virtual void pollEvents();
