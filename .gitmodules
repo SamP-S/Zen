@@ -7,3 +7,6 @@
 [submodule "core/external/la"]
 	path = core/external/la
 	url = git@github.com:SamP-S/LA.git
+[submodule "platform/external/sdl2"]
+	path = platform/external/sdl2
+	url = git@github.com:libsdl-org/SDL.git
