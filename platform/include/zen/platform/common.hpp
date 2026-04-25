@@ -49,11 +49,15 @@ bool operator&(WindowFlags a, WindowFlags b) noexcept;
 // sentinel to create window x/y to request OS-centred placement
 static constexpr int32_t kWindowCentred = INT32_MIN;
 
+// default window dimensions
+#define DEFAULT_WINDOW_WIDTH 1280
+#define DEFAULT_WINDOW_HEIGHT 720
+
 // window description struct for window creation
 struct WindowDesc {
 	std::string title = "Zen Window";
-	int32_t width = 1280;
-	int32_t height = 720;
+	int32_t width = DEFAULT_WINDOW_WIDTH;
+	int32_t height = DEFAULT_WINDOW_HEIGHT;
 	int32_t x = kWindowCentred;
 	int32_t y = kWindowCentred;
 	WindowFlags flags = WindowFlags::None;
