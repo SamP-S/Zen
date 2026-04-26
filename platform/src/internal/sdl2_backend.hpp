@@ -77,6 +77,9 @@ public:
 
     void captureCursor(WindowHandle _handle, bool _capture) override;
     bool hasCursorCapture(WindowHandle _handle) const override;
+
+    // --- Grapphics Context ---------------------------------------------------
+    void swapBuffers(WindowHandle _handle) override;
 };
 
 } // namespace sdl2

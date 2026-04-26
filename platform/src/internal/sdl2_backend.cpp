@@ -380,6 +380,23 @@ bool SDL2Backend::hasCursorCapture(WindowHandle _handle) const {
     return (flags & SDL_WINDOW_MOUSE_GRABBED) != 0;
 }
 
+// ---------------------------------------------------------------------------
+// Graphics Context
+// ---------------------------------------------------------------------------
+
+void SDL2Backend::swapBuffers(WindowHandle _handle) {
+    auto state = getState(_handle);
+    if (!state) {
+        spdlog::error("[Platform] [SDL2] Failed to swap buffers: invalid window handle");
+        return;
+    }
+    if (state->glContext) {
+        SDL_GL_SwapWindow(state->sdlWindow);
+    } else {
+        spdlog::error("[Platform] [SDL2] Failed to swap buffers: window does not have an OpenGL context");
+    }
+}
+
 } // namespace sdl2
 
 } // namespace platform
