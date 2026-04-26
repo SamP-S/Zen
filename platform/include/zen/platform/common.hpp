@@ -12,8 +12,7 @@ namespace platform {
 // enum of supported platform backends
 enum class PlatformBackendAPI {
 	None = 0,
-	SDL2,
-	GLFW
+	SDL2
 };
 
 // enum of supported graphics APIs

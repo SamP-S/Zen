@@ -23,9 +23,11 @@ private:
     Platform& operator=(const Platform&) = delete;
 
     IBackend* m_backend = nullptr;
-    WindowHandle m_mainWindow = kInvalidWindow;
-    // EventHandler m_eventHandler;
+    EventCallback m_eventCallback = nullptr;
     bool m_quitFlag = false;
+
+    void updateInternalState(const Event& _event); // cache key/mouse state
+
 
 public:
     // --- Lifecycle ---------------------------------------------------------
@@ -39,6 +41,8 @@ public:
     // bool pollEvent(Event& _event);
     bool pollEvents();
     bool pollNativeEvent(void* _nativeEvent);
+
+    bool shouldClose() const;
 
     // --- Window ------------------------------------------------------------
     // management
@@ -77,6 +81,9 @@ public:
 
     void captureCursor(WindowHandle _h, bool _capture);
     bool hasCursorCapture(WindowHandle _h) const;
+
+    // --- Graphics Context --------------------------------------------------
+    void swapBuffers(WindowHandle _h);
 
     // --- Input -------------------------------------------------------------
     // todo

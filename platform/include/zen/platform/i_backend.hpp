@@ -31,14 +31,14 @@ public:
     IBackend& operator=(IBackend&&) noexcept = default;
 
 	// --- Lifecycle ---------------------------------------------------------
-	virtual bool init() = 0;
+	virtual bool init(GraphicsAPI _graphicsAPI) = 0;
 	virtual void shutdown() = 0;
 
     // --- Events ------------------------------------------------------------
-    virtual bool pollEvent(Event& _event) = 0;  // user polls for events, pre-processed by backend (translate native events to Event & cache state i.e key states, mouse position, etc)
+    virtual bool pollEvent(Event* _event) = 0;  // user polls for events, pre-processed by backend (translate native events to Event & cache state i.e key states, mouse position, etc)
     virtual bool pollNativeEvent(void* _nativeEvent) = 0; // native events, unprocessed for UI libraries (ImGui) that need access to native events, backend should still update internal state for these events (key states, mouse position, etc)
 
-    // --- Events ------------------------------------------------------------
+    // --- Window ------------------------------------------------------------
 	// management
 	virtual WindowHandle createWindow(const WindowDesc& _desc) = 0;
 	virtual void destroyWindow(WindowHandle _handle) = 0;
@@ -75,6 +75,9 @@ public:
 
     virtual void captureCursor(WindowHandle _handle, bool _capture) = 0;
     virtual bool hasCursorCapture(WindowHandle _handle) const = 0;
+
+    // --- Graphics Context --------------------------------------------------
+    virtual void swapBuffers(WindowHandle _handle) = 0;
 };
 
 } // namespace platform

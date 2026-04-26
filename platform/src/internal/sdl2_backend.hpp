@@ -9,6 +9,8 @@ namespace zen {
 
 namespace platform {
 
+namespace sdl2 {
+
 class SDL2Backend final : public IBackend {
 private:
     // internal state
@@ -19,9 +21,11 @@ private:
     WindowState* getState(WindowHandle _handle);
     const WindowState* getState(WindowHandle _handle) const;
     SDL_Window* getSDLWindow(WindowHandle _handle) const;
+    Event translateSDLEvent(const SDL_Event& sdlEvent) const;
 
     std::unordered_map<WindowHandle, WindowState> m_windows;
     WindowHandle m_nextHandle = 1;  // 0 rserved for invalid
+    GraphicsAPI m_graphicsAPI = GraphicsAPI::None;
 
 public:
     // --- Constr/Destr -----------------------------------------------------
@@ -29,11 +33,11 @@ public:
     ~SDL2Backend() override;
 
     // --- Lifecycle ---------------------------------------------------------
-    bool init() override;
+    bool init(GraphicsAPI _graphicsAPI) override;
     void shutdown() override;
 
     // --- Events ------------------------------------------------------------
-    bool pollEvent(Event& _event) override;
+    bool pollEvent(Event* _event) override;
     bool pollNativeEvent(void* _nativeEvent) override;
 
     // --- Window ------------------------------------------------------------
@@ -74,6 +78,8 @@ public:
     void captureCursor(WindowHandle _handle, bool _capture) override;
     bool hasCursorCapture(WindowHandle _handle) const override;
 };
+
+} // namespace sdl2
 
 } // namespace platform
 
