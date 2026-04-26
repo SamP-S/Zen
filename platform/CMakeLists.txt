@@ -16,7 +16,8 @@ target_include_directories(zen_platform PRIVATE ${PLATFORM_PRIVATE_INCLUDES})
 # link zen_core
 target_link_libraries(zen_platform PUBLIC zen::core)
 
-
+# link SDL2
+target_link_libraries(zen_platform PUBLIC SDL2::SDL2)
 
 # alias project to match C++ namespace
 add_library(zen::platform ALIAS zen_platform)

@@ -36,6 +36,119 @@ SDL_Window* SDL2Backend::getSDLWindow(WindowHandle _handle) const {
     return state ? state->sdlWindow : nullptr;
 }
 
+Event SDL2Backend::translateSDLEvent(const SDL_Event& sdlEvent) const {
+    Event e{};
+
+    switch(sdlEvent.type) {
+        // --- Quit ---------------------------------------------------------
+        case SDL_QUIT:
+            e.type = EventType::Quit;
+            break;
+
+        // --- Window ---------------------------------------------------------
+        case SDL_WINDOWEVENT:
+            // data
+            e.window.windowID   = sdlEvent.window.windowID;
+            e.window.data1      = static_cast<uint32_t>(sdlEvent.window.data1);  // width or x
+            e.window.data2      = static_cast<uint32_t>(sdlEvent.window.data2);  // height or y
+            
+            switch (sdlEvent.window.event) {
+                case SDL_WINDOWEVENT_SHOWN:
+                    e.type = EventType::WindowShown;
+                    break;
+                case SDL_WINDOWEVENT_HIDDEN:
+                    e.type = EventType::WindowHidden;
+                    break;
+                case SDL_WINDOWEVENT_MOVED:
+                    e.type = EventType::WindowMoved;
+                    break;
+                case SDL_WINDOWEVENT_RESIZED:
+                    e.type = EventType::WindowResized;
+                    break;
+                case SDL_WINDOWEVENT_MINIMIZED:
+                    e.type = EventType::WindowMinimized;
+                    break;
+                case SDL_WINDOWEVENT_MAXIMIZED:
+                    e.type = EventType::WindowMaximized;
+                    break;
+                case SDL_WINDOWEVENT_RESTORED:
+                    e.type = EventType::WindowRestored;
+                    break;
+                case SDL_WINDOWEVENT_CLOSE:
+                    e.type = EventType::WindowDestroyed;
+                    break;
+                case SDL_WINDOWEVENT_EXPOSED:
+                    e.type = EventType::WindowExposed;
+                    break;
+                case SDL_WINDOWEVENT_ENTER:
+                    e.type = EventType::WindowMouseEnter;
+                    break;
+                case SDL_WINDOWEVENT_LEAVE:
+                    e.type = EventType::WindowMouseLeave;
+                    break;
+                case SDL_WINDOWEVENT_FOCUS_GAINED:
+                    e.type = EventType::WindowFocusGained;
+                    break;
+                case SDL_WINDOWEVENT_FOCUS_LOST:
+                    e.type = EventType::WindowFocusLost;
+                    break;
+            }
+            break;
+
+        // --- Key ---------------------------------------------------------
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            e.type          = (sdlEvent.type == SDL_KEYDOWN) ? EventType::KeyDown : EventType::KeyUp;
+            e.key.windowID  = sdlEvent.key.windowID;
+            e.key.keycode   = static_cast<uint32_t>(sdlEvent.key.keysym.sym);
+            e.key.state     = (sdlEvent.key.state == SDL_PRESSED) ? 1u : 0u;
+            e.key.repeat    = (sdlEvent.key.repeat != 0) ? 1u : 0u;
+            break;
+
+        // --- Mouse Motion ------------------------------------------------
+        case SDL_MOUSEMOTION:
+            e.type                  = EventType::MouseMotion;
+            e.mouseMotion.windowID  = sdlEvent.motion.windowID;
+            e.mouseMotion.state     = sdlEvent.motion.state;
+            e.mouseMotion.x         = static_cast<float>(sdlEvent.motion.x);
+            e.mouseMotion.y         = static_cast<float>(sdlEvent.motion.y);
+            e.mouseMotion.dx        = static_cast<float>(sdlEvent.motion.xrel);
+            e.mouseMotion.dy        = static_cast<float>(sdlEvent.motion.yrel);
+            break;
+
+        // --- Mouse Buttons -----------------------------------------------
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            e.type                  = (sdlEvent.type == SDL_MOUSEBUTTONDOWN)
+                                        ? EventType::MouseButtonDown
+                                        : EventType::MouseButtonUp;
+            e.mouseButton.windowID  = sdlEvent.button.windowID;
+            e.mouseButton.button    = sdlEvent.button.button;
+            e.mouseButton.state     = (sdlEvent.button.state == SDL_PRESSED) ? 1u : 0u;
+            e.mouseButton.x         = static_cast<float>(sdlEvent.button.x);
+            e.mouseButton.y         = static_cast<float>(sdlEvent.button.y);
+            break;
+        
+        // --- Mouse Scroll -----------------------------------------------
+        case SDL_MOUSEWHEEL:
+            e.type                  = EventType::MouseScroll;
+            e.mouseScroll.windowID  = sdlEvent.wheel.windowID;
+            e.mouseScroll.delta     = sdlEvent.wheel.y; // vertical scroll
+            break;
+
+        // --- IGNORE OTHER EVENTS FOR NOW ---
+        default:
+            e.type = EventType::Unsupported;
+            e.common.data1 = 0; // reserved
+            e.common.data2 = 0; // reserved
+            e.common.data3 = 0; // reserved
+            e.common.data4 = 0; // reserved
+            break;
+    }
+    
+    return e;
+}
+
 // ---------------------------------------------------------------------------
 // Lifecycle
 // ---------------------------------------------------------------------------

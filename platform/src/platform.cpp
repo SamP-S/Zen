@@ -18,7 +18,7 @@ void Platform::updateInternalState(const Event& _event) {
             spdlog::info("[Platform] Quit event received");
             m_quitFlag = true;
         default:
-            spdlog::warn("[Platform] Unhandled event type: {}", static_cast<int>(_event.type));
+            // spdlog::warn("[Platform] Unhandled event type: {}", static_cast<int>(_event.type));
             break;
     }
 }

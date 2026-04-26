@@ -31,6 +31,7 @@ enum class EventType {
     MouseButtonDown,
     MouseButtonUp,
     MouseScroll,
+    Unsupported,
 };
 
 struct CommonEvent {
