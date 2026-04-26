@@ -19,7 +19,7 @@ target_link_libraries(zen_core PUBLIC la)
 # alias project to match C++ namespace
 add_library(zen::core ALIAS zen_core)
 
-# testing and examples
-if (BUILD_EXAMPLES)
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples")
+# demos
+if (BUILD_DEMOS)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/demos")
 endif()

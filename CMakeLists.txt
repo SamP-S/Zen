@@ -8,23 +8,71 @@ set(CMAKE_CXX_EXTENSIONS        OFF)
 set(CMAKE_BUILD_TYPE            Debug)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
 
-# options
-option(BUILD_CORE "Build core library" ON)
-option(BUILD_MODULES "Build all modules" ON)
-option(BUILD_ENGINE "Build engine targets" ON)
-option(BUILD_PROJECTS "Build sample projects" ON)
-option(BUILD_EXAMPLES "Build example apps" ON)
+# -----------------------------
+# Options
+# -----------------------------
 
-# options checks
-if (NOT BUILD_CORE AND NOT BUILD_MODULES AND NOT BUILD_ENGINE AND NOT BUILD_PROJECTS)
-    message(FATAL_ERROR "At least one of BUILD_CORE, BUILD_MODULES, BUILD_ENGINE, or BUILD_PROJECTS must be ON")
-elseif (BUILD_MODULES AND (NOT BUILD_CORE))
-    message(FATAL_ERROR "BUILD_MODULES requires BUILD_CORE to be ON")
-elseif (BUILD_ENGINE AND (NOT BUILD_CORE OR NOT BUILD_MODULES))
-    message(FATAL_ERROR "BUILD_ENGINE requires BUILD_CORE and BUILD_MODULES to be ON")
-elseif (BUILD_PROJECTS AND (NOT BUILD_CORE OR NOT BUILD_MODULES OR NOT BUILD_ENGINE))
-    message(FATAL_ERROR "BUILD_PROJECTS requires BUILD_CORE, BUILD_MODULES and BUILD_ENGINE to be ON")
+# build options
+set(BUILD_LEVEL "platform" CACHE STRING "Build level (core, platform, modules, engine, projects)")
+set_property(CACHE BUILD_LEVEL PROPERTY STRINGS core platform modules engine projects)
+
+# optional components
+include(CTest) # provides BUILD_TESTING option
+option(BUILD_DEMOS "Build demo apps" OFF)
+
+# -----------------------------
+# Validate BUILD_LEVEL
+# -----------------------------
+
+# validate build level
+set(_levels core platform modules engine projects)
+list(FIND _levels "${BUILD_LEVEL}" _level_index)
+if(_level_index EQUAL -1)
+    message(FATAL_ERROR "Invalid BUILD_LEVEL='${BUILD_LEVEL}'. Must be one of: ${_levels}")
 endif()
+
+# -----------------------------
+# Helper function:  
+# -----------------------------
+
+# enables a layer if it's <= selected level
+function(enable_layer layer out_var)
+    set(_levels core platform modules engine projects)
+
+    list(FIND _levels "${layer}" _layer_index)
+    list(FIND _levels "${BUILD_LEVEL}" _current_index)
+
+    if(_layer_index EQUAL -1)
+        message(FATAL_ERROR "Unknown layer: ${layer}")
+    endif()
+
+    if(_layer_index LESS_EQUAL _current_index)
+        set(${out_var} ON PARENT_SCOPE)
+    else()
+        set(${out_var} OFF PARENT_SCOPE)
+    endif()
+endfunction()
+
+# -----------------------------
+# Resolve what to build
+# -----------------------------
+
+enable_layer(core     BUILD_CORE)
+enable_layer(platform BUILD_PLATFORM)
+enable_layer(modules  BUILD_MODULES)
+enable_layer(engine   BUILD_ENGINE)
+enable_layer(projects BUILD_PROJECTS)
+
+# -----------------------------
+# Debug output (optional)
+# -----------------------------
+
+message(STATUS "BUILD_LEVEL: ${BUILD_LEVEL}")
+message(STATUS "  CORE:     ${BUILD_CORE}")
+message(STATUS "  PLATFORM: ${BUILD_PLATFORM}")
+message(STATUS "  MODULES:  ${BUILD_MODULES}")
+message(STATUS "  ENGINE:   ${BUILD_ENGINE}")
+message(STATUS "  PROJECTS: ${BUILD_PROJECTS}")
 
 # git submodule
 find_package(Git REQUIRED)
@@ -34,9 +82,18 @@ execute_process(
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
+# -----------------------------
+# Build layers
+# -----------------------------
+
 # zen core
 if (BUILD_CORE)
     add_subdirectory(core)
+endif()
+
+# zen platform
+if (BUILD_PLATFORM)
+    add_subdirectory(platform)
 endif()
 
 # zen modules
@@ -46,15 +103,20 @@ endif()
 
 # zen engine
 if (BUILD_ENGINE)
-    message(STATUS "No engine to build yet")
+    message(FATAL_ERROR "No engine to build yet")
 endif()
 
 # zen projects
 if (BUILD_PROJECTS)
-    message(STATUS "No projects to build yet")
+    message(FATAL_ERROR "No projects to build yet")
 endif()
 
-# testing
-if (BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
+# # optional: demos
+# if (BUILD_DEMOS)
+#     add_subdirectory(demos)
+# endif()
+
+# # optoinal: tests
+# if (BUILD_TESTING)
+#     add_subdirectory(tests)
+# endif()
