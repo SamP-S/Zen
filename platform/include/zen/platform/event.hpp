@@ -30,7 +30,7 @@ enum class EventType {
     MouseMotion,
     MouseButtonDown,
     MouseButtonUp,
-    MouseScroll,
+    MouseWheel,
     Unsupported,
 };
 
@@ -67,7 +67,7 @@ struct MouseButtonEvent {
     float       x, y;       // mouse position relative to window
 };
 
-struct MouseScrollEvent {
+struct MouseWheelEvent {
     uint32_t    windowID;
     int32_t     delta;      // scroll amount, positive = scroll up, negative = scroll down
 };
@@ -81,7 +81,7 @@ struct Event {
         KeyEvent            key;
         MouseMotionEvent    mouseMotion;
         MouseButtonEvent    mouseButton;
-        MouseScrollEvent    mouseScroll;
+        MouseWheelEvent     mouseWheel;
     };
 };
 

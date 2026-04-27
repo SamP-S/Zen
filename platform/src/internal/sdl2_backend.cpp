@@ -129,14 +129,14 @@ Event SDL2Backend::translateSDLEvent(const SDL_Event& sdlEvent) const {
             e.mouseButton.y         = static_cast<float>(sdlEvent.button.y);
             break;
         
-        // --- Mouse Scroll -----------------------------------------------
+        // --- Mouse Wheel -----------------------------------------------
         case SDL_MOUSEWHEEL:
-            e.type                  = EventType::MouseScroll;
-            e.mouseScroll.windowID  = sdlEvent.wheel.windowID;
-            e.mouseScroll.delta     = sdlEvent.wheel.y; // vertical scroll
+            e.type                  = EventType::MouseWheel;
+            e.mouseWheel.windowID  = sdlEvent.wheel.windowID;
+            e.mouseWheel.delta     = sdlEvent.wheel.y;  // vertical scroll
             break;
 
-        // --- IGNORE OTHER EVENTS FOR NOW ---
+        // --- IGNORE OTHER EVENTS FOR NOW -------------------------------
         default:
             e.type = EventType::Unsupported;
             e.common.data1 = 0; // reserved

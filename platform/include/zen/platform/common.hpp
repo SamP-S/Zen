@@ -7,7 +7,9 @@ namespace zen {
 
 namespace platform {
 
-/// ===== Backend APIs =====
+// ---------------------------------------------------------------------------
+// Backend Types
+// ---------------------------------------------------------------------------
 
 // enum of supported platform backends
 enum class PlatformBackendAPI {
@@ -22,6 +24,16 @@ enum class GraphicsAPI {
 	Vulkan
 };
 
+// ---------------------------------------------------------------------------
+// Window
+// ---------------------------------------------------------------------------
+
+// opaque handle type for windows
+using WindowHandle = uint32_t;
+
+// sentinel value for invalid window handle
+static constexpr WindowHandle kInvalidWindow = 0;
+
 // bitfield flags for window parameters
 enum class WindowFlags : uint8_t {
 	None 		= 0u,
@@ -33,24 +45,24 @@ enum class WindowFlags : uint8_t {
 	AlwaysTop 	= 1u << 5
 };
 
-/// ===== Windows =====
+inline WindowFlags operator|(WindowFlags a, WindowFlags b) noexcept {
+    return static_cast<WindowFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+}
 
-// opaque handle type for windows
-using WindowHandle = uint32_t;
+inline WindowFlags& operator|=(WindowFlags& a, WindowFlags b) noexcept {
+    return a = a | b;
+}
 
-// sentinel value for invalid window handle
-static constexpr WindowHandle kInvalidWindow = 0;
-
-WindowFlags operator|(WindowFlags a, WindowFlags b) noexcept;
-WindowFlags& operator|=(WindowFlags& a, WindowFlags b) noexcept;
-bool operator&(WindowFlags a, WindowFlags b) noexcept;
-
-// sentinel to create window x/y to request OS-centred placement
-static constexpr int32_t kWindowCentred = INT32_MIN;
+inline bool operator&(WindowFlags a, WindowFlags b) noexcept {
+    return (static_cast<uint8_t>(a) & static_cast<uint8_t>(b)) != 0;
+}
 
 // default window dimensions
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 720
+
+// sentinel to create window x/y to request OS-centred placement
+static constexpr int32_t kWindowCentred = INT32_MIN;
 
 // window description struct for window creation
 struct WindowDesc {
@@ -62,7 +74,9 @@ struct WindowDesc {
 	WindowFlags flags = WindowFlags::None;
 };
 
-/// ===== Geometry =====
+// ---------------------------------------------------------------------------
+// Geometry
+// ---------------------------------------------------------------------------
 
 struct Point {
 	int32_t x;

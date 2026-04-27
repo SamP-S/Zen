@@ -12,13 +12,111 @@ namespace platform {
 // Internal State
 // ---------------------------------------------------------------------------
 
+void Platform::flushInternalState() {
+    // reset per-frame key states
+    for (auto& [key, state] : m_keys) {
+        state.pressed = false;
+        state.released = false;
+    }
+    // reset per-frame mouse button states
+    for (auto& btn : m_mouse.buttons) {
+        btn.pressed = false;
+        btn.released = false;
+    }
+    // reset per-frame mouse motion/scroll
+    m_mouse.dx = 0.0f;
+    m_mouse.dy = 0.0f;
+    m_mouse.scroll = 0.0f;
+}
+
 void Platform::updateInternalState(const Event& _event) {
     switch(_event.type) {
+        // --- Quit ---------------------------------------------------------
         case EventType::Quit:
             spdlog::info("[Platform] Quit event received");
             m_quitFlag = true;
+
+        // --- Keyboard -----------------------------------------------------
+        case EventType::KeyDown: {
+            const KeyCode key = static_cast<KeyCode>(_event.key.keycode);
+            KeyState& state = m_keys[key];
+            if (!state.down) {  // ignore auto-repeat for pressed
+                state.pressed = true;
+            }
+            state.down = true;
+        }
+        case EventType::KeyUp: {
+            const KeyCode key = static_cast<KeyCode>(_event.key.keycode);
+            KeyState& state = m_keys[key];
+            state.down = false;
+            state.released = true;
+            break;
+        }
+
+        // --- Mouse Buttons -----------------------------------------------------
+        case EventType::MouseButtonDown: {
+            const uint8_t btn = _event.mouseButton.button;
+            if (btn < static_cast<uint8_t>(MouseButton::COUNT)) {
+                KeyState& state = m_mouse.buttons[btn];
+                if (!state.down) {  // ignore auto-repeat for pressed
+                    state.pressed = true;
+                }
+                state.down = true;
+            }
+            break;
+        }
+        case EventType::MouseButtonUp: {
+            const uint8_t btn = _event.mouseButton.button;
+            if (btn < static_cast<uint8_t>(MouseButton::COUNT)) {
+                KeyState& state = m_mouse.buttons[btn];
+                state.down = false;
+                state.released = true;
+            }
+            break;
+        }
+
+        // --- Mouse Motion -----------------------------------------------------
+        case EventType::MouseMotion:
+            m_mouse.x = _event.mouseMotion.x;
+            m_mouse.y = _event.mouseMotion.y;
+            m_mouse.dx += _event.mouseMotion.dx;
+            m_mouse.dy += _event.mouseMotion.dy;
+            break;
+
+        // --- Mouse Scroll -----------------------------------------------------
+        case EventType::MouseWheel:
+            m_mouse.scroll += _event.mouseWheel.delta;
+            break;
+
+        // --- Window Input -----------------------------------------------------
+        case EventType::WindowFocusLost:
+            for (auto& [key, state] : m_keys)
+                state = {};
+            for (auto& btn : m_mouse.buttons)
+                btn = {};
+            break;
+        case EventType::WindowMouseLeave:
+            for (auto& btn : m_mouse.buttons) {
+                btn.released    = btn.down; // released any held buttons
+                btn.down        = false;
+                btn.pressed     = false;
+            }
+            break;
+        
+        case EventType::WindowMinimized:
+        case EventType::WindowHidden:
+            // reset all input state when window is not visible, to prevent "stuck" keys on alt-tab
+            for (auto& [key, state] : m_keys)
+                state = {};
+            for (auto& btn : m_mouse.buttons)
+                btn = {};
+            m_mouse.dx = 0.0f;
+            m_mouse.dy = 0.0f;
+            m_mouse.scroll = 0.0f;
+            break;
+        
+        // --- Fallback -----------------------------------------------------
         default:
-            // spdlog::warn("[Platform] Unhandled event type: {}", static_cast<int>(_event.type));
             break;
     }
 }
@@ -74,21 +172,28 @@ void Platform::shutdown() {
 // Events
 // ---------------------------------------------------------------------------
 
-void Platform::setEventCallback(EventCallback _callback) {
+void Platform::bindEventCallback(EventCallback _callback) {
     assert(m_backend && "Platform not initialized");
     m_eventCallback = std::move(_callback);
 }
 
+void Platform::unbindEventCallback() {
+    m_eventCallback = nullptr;
+}
+
 bool Platform::pollEvents() {
     assert(m_backend && "Platform not initialized");
-    if (m_quitFlag) return false;
+
+    flushInternalState();
 
     Event event;
     while (m_backend->pollEvent(&event)) {
         updateInternalState(event);
-        if (m_eventCallback) m_eventCallback(event);
+        if (m_eventCallback)
+            m_eventCallback(event);
     }
-    return true;
+
+    return !m_quitFlag;
 }
 
 bool Platform::pollNativeEvent(void* _nativeEvent) {
@@ -226,11 +331,77 @@ bool Platform::hasCursorCapture(WindowHandle _h) const {
 }
 
 // ---------------------------------------------------------------------------
-// Window
+// Graphics Context
 // ---------------------------------------------------------------------------
+
 void Platform::swapBuffers(WindowHandle _h) {
     assert(m_backend && "Platform not initialized");
     m_backend->swapBuffers(_h);
+}
+
+// ---------------------------------------------------------------------------
+// Input
+// ---------------------------------------------------------------------------
+
+// keyboard
+bool Platform::isKeyDown(KeyCode _key) const {
+    assert(m_backend && "Platform not initialized");
+    auto it = m_keys.find(_key);
+    return it != m_keys.end() && it->second.down;
+}
+
+bool Platform::isKeyPressed(KeyCode _key) const {
+    assert(m_backend && "Platform not initialized");
+    auto it = m_keys.find(_key);
+    return it != m_keys.end() && it->second.pressed;
+}
+
+bool Platform::isKeyReleased(KeyCode _key) const {
+    assert(m_backend && "Platform not initialized");
+    auto it = m_keys.find(_key);
+    return it != m_keys.end() && it->second.released;
+}
+
+// mouse buttons
+bool Platform::isMouseDown(MouseButton _button) const {
+    assert(m_backend && "Platform not initialized");
+    return m_mouse.buttons[static_cast<uint8_t>(_button)].down;
+}
+
+bool Platform::isMousePressed(MouseButton _button) const {
+    assert(m_backend && "Platform not initialized");
+    return m_mouse.buttons[static_cast<uint8_t>(_button)].pressed;
+}
+
+bool Platform::isMouseReleased(MouseButton _button) const {
+    assert(m_backend && "Platform not initialized");
+    return m_mouse.buttons[static_cast<uint8_t>(_button)].released;
+}
+
+// mouse motion
+float Platform::mouseX() const {
+    assert(m_backend && "Platform not initialized");
+    return m_mouse.x;
+}
+
+float Platform::mouseY() const {
+    assert(m_backend && "Platform not initialized");
+    return m_mouse.y;
+}
+
+float Platform::mouseDX() const {
+    assert(m_backend && "Platform not initialized");
+    return m_mouse.dx;
+}
+
+float Platform::mouseDY() const {
+    assert(m_backend && "Platform not initialized");
+    return m_mouse.dy;
+}
+
+float Platform::mouseScroll() const {
+    assert(m_backend && "Platform not initialized");
+    return m_mouse.scroll;
 }
 
 } // namespace platform
